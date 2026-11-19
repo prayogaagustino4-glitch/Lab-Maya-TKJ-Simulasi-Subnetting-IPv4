@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAB MAYA TKJ — Simulasi Subnetting IPv4 & Perancangan VLSM</title>
+  <style>
+    /* ==================== VARIABEL TEMA CYBER / DARK MODE ==================== */
+    :root {
+      --bg-main: #070b14;
+      --bg-panel: #0f172a;
+      --bg-card: #162033;
+      --bg-input: #0a101d;
+      --border-color: #263449;
+      --border-highlight: #38bdf8;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #06b6d4;
+      --accent-cyan-light: #22d3ee;
+      --accent-cyan-bg: rgba(6, 182, 212, 0.14);
+      --accent-green: #10b981;
+      --accent-green-light: #34d399;
+      --accent-green-bg: rgba(16, 185, 129, 0.14);
+      --accent-amber: #f59e0b;
+      --accent-amber-light: #fbbf24;
+      --accent-amber-bg: rgba(245, 158, 11, 0.14);
+      --accent-red: #ef4444;
+      --accent-red-light: #f87171;
+      --accent-red-bg: rgba(239, 68, 68, 0.15);
+      --accent-purple: #8b5cf6;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.55;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==================== HEADER & NAVIGASI TAB ==================== */
+    header {
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 0.9rem 1.25rem;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-cyan), #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+    }
+
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge-tkj {
+      background: var(--accent-cyan-bg);
+      color: var(--accent-cyan-light);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    /* Tab Navigation */
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      background: var(--bg-input);
+      padding: 0.35rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      padding: 0.55rem 1rem;
+      border-radius: 9px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(37, 99, 235, 0.22));
+      color: var(--accent-cyan-light);
+      border-color: rgba(34, 211, 238, 0.45);
+      box-shadow: 0 2px 10px rgba(6, 182, 212, 0.18);
+    }
+
+    /* ==================== CONTAINER UTAMA ==================== */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.25rem;
+    }
+
+    .mode-section {
+      display: none;
+      animation: fadeIn 0.28s ease;
+    }
+
+    .mode-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==================== KOMPONEN CARD & GRID ==================== */
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot-cyan { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-cyan-light); box-shadow: 0 0 8px var(--accent-cyan); }
+    .dot-green { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-green-light); box-shadow: 0 0 8px var(--accent-green); }
+    .dot-amber { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-amber-light); box-shadow: 0 0 8px var(--accent-amber); }
+
+    /* ==================== MODE 1: INPUT & PRESET ==================== */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.4rem;
+    }
+
+    .ip-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    input[type="text"], select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent-cyan-light);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+    }
+
+    input[type="text"].invalid {
+      border-color: var(--accent-red);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+    }
+
+    .error-msg {
+      color: var(--accent-red-light);
+      font-size: 0.76rem;
+      margin-top: 0.35rem;
+      display: none;
+    }
+
+    /* Slider Prefix CIDR */
+    .cidr-control-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: var(--bg-input);
+      padding: 0.65rem 0.9rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+      height: 6px;
+    }
+
+    .cidr-badge-display {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--accent-amber-light);
+      background: var(--accent-amber-bg);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      padding: 0.2rem 0.6rem;
+      border-radius: 8px;
+      min-width: 54px;
+      text-align: center;
+    }
+
+    /* Tombol Preset Cepat */
+    .preset-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.5rem;
+    }
+
+    .preset-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--accent-cyan-light);
+      background: var(--accent-cyan-bg);
+      color: var(--accent-cyan-light);
+      transform: translateY(-1px);
+    }
+
+    /* ==================== VISUALISASI BINER 32-BIT ==================== */
+    .binary-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.78rem;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .legend-net { background: var(--accent-cyan-bg); border: 1px solid var(--accent-cyan-light); }
+    .legend-host { background: var(--accent-green-bg); border: 1px solid var(--accent-green-light); }
+    .legend-line { width: 3px; height: 16px; background: var(--accent-amber-light); border-radius: 2px; }
+
+    .octets-wrapper {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 1024px) {
+      .octets-wrapper {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .octets-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .octet-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.75rem;
+    }
+
+    .octet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.55rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .octet-dec {
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 0.9rem;
+    }
+
+    .bits-row {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      position: relative;
+    }
+
+    .bit-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.1rem;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .bit-cell.net-bit {
+      background: var(--accent-cyan-bg);
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      color: var(--accent-cyan-light);
+    }
+
+    .bit-cell.host-bit {
+      background: var(--accent-green-bg);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      color: var(--accent-green-light);
+    }
+
+    /* Penanda batas CIDR yang bergeser */
+    .bit-cell.cidr-boundary {
+      border-right: 3px solid var(--accent-amber-light) !important;
+      box-shadow: 3px 0 10px rgba(251, 191, 36, 0.45);
+    }
+
+    .bit-val {
+      font-size: 0.92rem;
+      font-weight: 800;
+    }
+
+    .bit-weight {
+      font-size: 0.58rem;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    .cidr-marker-info {
+      margin-top: 0.85rem;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem;
+      color: #fde68a;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ==================== PANEL HASIL PERHITUNGAN ==================== */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .result-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 0.95rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .result-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+
+    .result-value {
+      font-family: var(--font-mono);
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #ffffff;
+      word-break: break-all;
+    }
+
+    .result-sub {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .val-cyan { color: var(--accent-cyan-light); }
+    .val-green { color: var(--accent-green-light); }
+    .val-amber { color: var(--accent-amber-light); }
+
+    /* ==================== MODE 2: TANTANGAN LAB DESAIN VLSM ==================== */
+    .vlsm-scenario-banner {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(16, 185, 129, 0.1));
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .vlsm-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      border: none;
+      padding: 0.58rem 1rem;
+      border-radius: 9px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent-green), #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      background: #1e293b;
+    }
+
+    .btn-amber {
+      background: var(--accent-amber-bg);
+      color: var(--accent-amber-light);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-amber:hover {
+      background: rgba(245, 158, 11, 0.24);
+    }
+
+    /* Tabel Input VLSM */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    table.vlsm-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+      background: var(--bg-input);
+    }
+
+    .vlsm-table th {
+      background: #131c2e;
+      color: var(--text-secondary);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.75rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .vlsm-table td {
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid rgba(38, 52, 73, 0.7);
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+
+    .vlsm-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .vlsm-input {
+      width: 100%;
+      min-width: 125px;
+      padding: 0.45rem 0.65rem !important;
+      font-size: 0.85rem !important;
+    }
+
+    .vlsm-select {
+      width: 100%;
+      min-width: 95px;
+      padding: 0.45rem 0.5rem !important;
+      font-size: 0.85rem !important;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.22rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .pill-wait { background: #1e293b; color: var(--text-secondary); border: 1px solid var(--border-color); }
+    .pill-ok { background: var(--accent-green-bg); color: var(--accent-green-light); border: 1px solid rgba(52, 211, 153, 0.4); }
+    .pill-err { background: var(--accent-red-bg); color: var(--accent-red-light); border: 1px solid rgba(248, 113, 113, 0.4); }
+
+    .feedback-box {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .feedback-row {
+      padding: 0.65rem 0.9rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+
+    .feedback-row.ok {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #a7f3d0;
+    }
+
+    .feedback-row.err {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fecaca;
+    }
+
+    /* Visualisasi Peta Alokasi Blok IP (Bar Diagram 256 IP) */
+    .ip-map-container {
+      margin-top: 0.75rem;
+    }
+
+    .ip-bar-track {
+      width: 100%;
+      height: 46px;
+      background: #090e1a;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ip-bar-segment {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #ffffff;
+      border-right: 1px solid rgba(7, 11, 20, 0.8);
+      transition: all 0.35s ease;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 0 4px;
+      cursor: help;
+    }
+
+    .ip-bar-segment:hover {
+      filter: brightness(1.18);
+    }
+
+    .ip-bar-free {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(30, 41, 59, 0.35),
+        rgba(30, 41, 59, 0.35) 8px,
+        rgba(15, 23, 42, 0.35) 8px,
+        rgba(15, 23, 42, 0.35) 16px
+      );
+    }
+
+    .ip-map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.78rem;
+    }
+
+    .map-legend-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+    }
+
+    /* ==================== PANDUAN RUMUS 2^n - 2 (FOOTER / CHEATSHEET) ==================== */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .formula-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.9rem;
+    }
+
+    .formula-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--accent-cyan-light);
+      margin-bottom: 0.35rem;
+    }
+
+    .formula-code {
+      display: inline-block;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #67e8f9;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin: 0.25rem 0;
+    }
+
+    .formula-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.85);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="24" height="24" fill="none" stroke="#ffffff" stroke-width="2.2" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="6" rx="2" />
+            <rect x="2" y="15" width="20" height="6" rx="2" />
+            <line x1="6" y1="6" x2="6.01" y2="6" />
+            <line x1="6" y1="18" x2="6.01" y2="18" />
+            <path d="M12 9v6" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">LAB MAYA TKJ — Simulasi Subnetting IPv4 &amp; Perancangan VLSM</div>
+          <div class="brand-subtitle">
+            <span class="badge-tkj">SMK TEKNIK KOMPUTER &amp; JARINGAN</span>
+            <span>Media Praktikum Interaktif Pengalamatan IP &amp; Efisiensi Blok Subnet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigasi 2 Mode -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="tab-btn active" id="tabBtn1" onclick="switchMode(1)" role="tab" aria-selected="true">
+          <span>🔢</span> Mode 1: Bedah Bit &amp; Subnetting IPv4
+        </button>
+        <button class="tab-btn" id="tabBtn2" onclick="switchMode(2)" role="tab" aria-selected="false">
+          <span>🧩</span> Mode 2: Tantangan Lab Desain VLSM
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main>
+
+    <!-- ===================================================================== -->
+    <!-- MODE 1: BEDAH BIT & SUBNETTING IPv4                                   -->
+    <!-- ===================================================================== -->
+    <section id="mode1Section" class="mode-section active">
+
+      <!-- Card 1: Input Parameter IPv4 & Preset Soal -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot-cyan"></span> Konfigurasi Alamat IPv4 &amp; Prefix CIDR</div>
+          <span id="ipClassBadge" class="badge-tkj">Kelas C • Private IP (RFC 1918)</span>
+        </div>
+
+        <div class="controls-grid">
+          <!-- Kolom Kiri: Input IP & Preset -->
+          <div>
+            <div class="form-group">
+              <label class="form-label" for="ipAddressInput">
+                <span>Alamat IPv4 Host / Jaringan</span>
+                <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan-light);">Format: X.X.X.X</span>
+              </label>
+              <div class="ip-input-wrapper">
+                <input type="text" id="ipAddressInput" value="192.168.10.25" placeholder="Contoh: 192.168.10.25" style="width: 100%;" oninput="handleMode1Update()" />
+              </div>
+              <div id="ipErrorMsg" class="error-msg">Format IPv4 tidak valid! Gunakan 4 oktet angka 0–255 (contoh: 192.168.10.25).</div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <div class="form-label"><span>Preset Soal Cepat Praktikum:</span></div>
+              <div class="preset-group">
+                <button type="button" class="preset-btn" onclick="applyPreset('192.168.10.25', 24)">Kelas C /24 (Standar)</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('192.168.10.75', 26)">Kelas C /26 (62 Host)</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('192.168.10.140', 27)">Kelas C /27 (30 Host)</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('172.16.45.10', 20)">Kelas B /20 (4094 Host)</button>
+                <button type="button" class="preset-btn" onclick="applyPreset('10.10.10.5', 30)">Point-to-Point /30 (2 Host)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kolom Kanan: Slider & Dropdown Prefix CIDR -->
+          <div>
+            <div class="form-group">
+              <label class="form-label" for="cidrSlider">
+                <span>Geser Slider atau Pilih Prefix Length (CIDR)</span>
+                <span id="bitSplitSummary" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-primary);">24 Bit Network | 8 Bit Host</span>
+              </label>
+              <div class="cidr-control-row">
+                <input type="range" id="cidrSlider" min="8" max="30" value="24" oninput="syncCidrFromSlider(this.value)" />
+                <select id="cidrSelect" aria-label="Pilih Prefix CIDR" onchange="syncCidrFromSelect(this.value)">
+                  <!-- Diisi otomatis via JS /8 sampai /30 -->
+                </select>
+                <div class="cidr-badge-display" id="cidrBadge">/24</div>
+              </div>
+            </div>
+
+            <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.7rem 0.9rem; font-size: 0.8rem; color: var(--text-secondary);">
+              💡 <strong style="color: #fff;">Tips Analisis Bit:</strong> Geser slider CIDR ke kanan untuk meminjam bit host menjadi bit network (<em>subnetting</em>). Perhatikan bagaimana garis batas <strong style="color: var(--accent-amber-light);">kuning/amber</strong> bergeser dan mengubah jumlah host yang tersedia.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Visualisasi Biner 32-Bit Real-Time -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot-amber"></span> Bedah Biner 32-Bit IPv4 (Porsi Network vs Porsi Host)</div>
+          <div class="binary-legend">
+            <div class="legend-item"><span class="legend-box legend-net"></span> <span>Bit Network (Porsi Jaringan)</span></div>
+            <div class="legend-item"><span class="legend-box legend-host"></span> <span>Bit Host (Porsi Perangkat)</span></div>
+            <div class="legend-item"><span class="legend-line"></span> <span>Batas Prefix CIDR</span></div>
+          </div>
+        </div>
+
+        <div id="octetsContainer" class="octets-wrapper">
+          <!-- 4 Oktet Biner Dirender oleh JavaScript -->
+        </div>
+
+        <div class="cidr-marker-info" id="cidrMarkerExplanation">
+          <!-- Penjelasan Dinamis Batas Bit -->
+        </div>
+      </div>
+
+      <!-- Card 3: Hasil Perhitungan Subnetting Lengkap -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot-green"></span> Hasil Kalkulasi Parameter Jaringan IPv4</div>
+          <span style="font-size: 0.76rem; color: var(--text-secondary); font-family: var(--font-mono);">Perhitungan Real-Time</span>
+        </div>
+
+        <div class="results-grid">
+          <div class="result-item">
+            <div class="result-label">Network ID (Alamat Jaringan)</div>
+            <div class="result-value val-cyan" id="resNetworkId">192.168.10.0/24</div>
+            <div class="result-sub" id="resNetworkBin">11000000.10101000.00001010.00000000</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Broadcast Address</div>
+            <div class="result-value val-amber" id="resBroadcast">192.168.10.255</div>
+            <div class="result-sub" id="resBroadcastBin">11000000.10101000.00001010.11111111</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Subnet Mask (Desimal &amp; Biner)</div>
+            <div class="result-value" id="resSubnetMask">255.255.255.0</div>
+            <div class="result-sub" id="resSubnetBin">11111111.11111111.11111111.00000000</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Wildcard Mask (Untuk ACL / OSPF)</div>
+            <div class="result-value" id="resWildcard">0.0.0.255</div>
+            <div class="result-sub" id="resWildcardBin">00000000.00000000.00000000.11111111</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Rentang IP Host Valid (Usable Range)</div>
+            <div class="result-value val-green" id="resHostRange">192.168.10.1 — 192.168.10.254</div>
+            <div class="result-sub">First Host s/d Last Host</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Kapasitas IP &amp; Host Usable</div>
+            <div class="result-value" id="resHostCounts">254 Host Valid <span style="font-size: 0.78rem; color: var(--text-secondary);">(256 Total IP)</span></div>
+            <div class="result-sub" id="resFormulaDetail">Rumus: 2^8 - 2 = 254 host</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Kelas IP &amp; Status Pengalamatan</div>
+            <div class="result-value" id="resIpType">Kelas C — Private IP</div>
+            <div class="result-sub" id="resIpScope">Jaringan Lokal (LAN / Intranet)</div>
+          </div>
+
+          <div class="result-item">
+            <div class="result-label">Block Size / Kelipatan Subnet</div>
+            <div class="result-value val-cyan" id="resBlockSize">256 (Oktet ke-4)</div>
+            <div class="result-sub" id="resInterestingOctet">Oktet Kritis: Oktet ke-4</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODE 2: TANTANGAN LAB DESAIN VLSM                                     -->
+    <!-- ===================================================================== -->
+    <section id="mode2Section" class="mode-section">
+
+      <!-- Banner Studi Kasus VLSM -->
+      <div class="vlsm-scenario-banner">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; flex-wrap: wrap;">
+            <span class="badge-tkj">STUDI KASUS JARINGAN SEKOLAH</span>
+            <span id="scenarioTitle" style="font-weight: 800; font-size: 1rem; color: #fff;">Skenario 1: Topologi Jaringan SMK Negeri TKJ</span>
+          </div>
+          <p id="scenarioDesc" style="font-size: 0.84rem; color: var(--text-secondary); max-width: 780px;">
+            Anda ditugaskan sebagai Administrator Jaringan untuk membagi blok IP utama <strong style="color: var(--accent-cyan-light); font-family: var(--font-mono);">192.168.100.0/24</strong> menggunakan teknik <strong>VLSM (Variable Length Subnet Mask)</strong>. Urutkan alokasi dari kebutuhan host terbesar ke terkecil agar tidak terjadi pemborosan IP maupun tabrakan alamat!
+          </p>
+        </div>
+
+        <div class="vlsm-actions">
+          <button type="button" class="btn btn-secondary" onclick="switchVlsmScenario()">🔄 Ganti Studi Kasus</button>
+          <button type="button" class="btn btn-amber" onclick="autoFillVlsmSolution()">💡 Tampilkan Kunci Jawaban</button>
+          <button type="button" class="btn btn-secondary" onclick="resetVlsmInputs()">🧹 Reset Isian</button>
+        </div>
+      </div>
+
+      <!-- Card Tabel Kerja VLSM -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot-cyan"></span> Lembar Kerja Perancangan Subnet VLSM (Urut Host Terbesar &rarr; Terkecil)</div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-amber-light);">
+            Blok Induk: <strong id="vlsmBaseBlock">192.168.100.0/24</strong> (256 Alamat IP)
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="vlsm-table">
+            <thead>
+              <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 22%;">Divisi / Ruangan</th>
+                <th style="width: 12%;">Kebutuhan Host</th>
+                <th style="width: 14%;">Prefix CIDR</th>
+                <th style="width: 18%;">Network ID</th>
+                <th style="width: 18%;">Broadcast Address</th>
+                <th style="width: 11%;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="vlsmTableBody">
+              <!-- Baris divisi VLSM dirender oleh JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem;">
+          <div style="font-size: 0.79rem; color: var(--text-secondary);">
+            *Catatan: Alokasi berikutnya dimulai tepat <strong>+1</strong> setelah Broadcast Address subnet sebelumnya.
+          </div>
+          <button type="button" class="btn btn-success" onclick="checkVlsmAnswers()">
+            ✅ Periksa Jawaban &amp; Koreksi Otomatis
+          </button>
+        </div>
+
+        <!-- Hasil Validasi & Penjelasan Koreksi -->
+        <div id="vlsmFeedbackContainer" class="feedback-box"></div>
+      </div>
+
+      <!-- Card Visualisasi Peta Alokasi Blok IP (Bar Diagram 256 IP) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot-green"></span> Visualisasi Peta Alokasi Blok IP (Kapasitas 256 Alamat /24)</div>
+          <span id="vlsmUsageSummary" style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan-light);">
+            Terpakai: 0 / 256 IP (0%)
+          </span>
+        </div>
+
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.65rem;">
+          Diagram batang di bawah ini memvisualisasikan bagaimana setiap divisi menempati ruang alamat IP secara berurutan tanpa tumpang tindih (<em>non-overlapping</em>). Isi jawaban atau klik <em>Periksa Jawaban</em> untuk memperbarui peta alokasi!
+        </p>
+
+        <div class="ip-map-container">
+          <div id="ipBarTrack" class="ip-bar-track">
+            <div class="ip-bar-free">Belum ada blok VLSM yang divalidasi — Silakan lengkapi tabel di atas</div>
+          </div>
+          <div id="ipMapLegend" class="ip-map-legend"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- PANDUAN SINGKAT RUMUS SUBNETTING & VLSM (SELALU TERSEDIA DI BAWAH)     -->
+    <!-- ===================================================================== -->
+    <section class="card" style="margin-top: 0.5rem;">
+      <div class="card-header">
+        <div class="card-title"><span class="dot-amber"></span> Panduan Cepat &amp; Rumus Dasar Subnetting TKJ</div>
+        <span style="font-size: 0.75rem; color: var(--text-secondary);">Referensi Praktikum</span>
+      </div>
+
+      <div class="guide-grid">
+        <div class="formula-box">
+          <div class="formula-title">1. Menghitung Jumlah Host Valid (Usable)</div>
+          <div class="formula-code">Jumlah Host = 2^h - 2</div>
+          <p class="formula-desc">
+            Di mana <strong>h</strong> adalah jumlah bit Host (bit berwarna hijau / bernilai 0 pada subnet mask), yaitu <code>32 - Prefix CIDR</code>. Dikurangi <strong>2</strong> karena alamat pertama dipakai untuk <em>Network ID</em> dan alamat terakhir untuk <em>Broadcast</em>.
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <div class="formula-title">2. Menghitung Block Size (Kelipatan Subnet)</div>
+          <div class="formula-code">Block Size = 256 - Nilai Oktet Mask</div>
+          <p class="formula-desc">
+            Contoh: Pada prefix <strong>/26</strong>, subnet mask adalah <code>255.255.255.192</code>. Maka kelipatan blok jaringan pada oktet ke-4 adalah <code>256 - 192 = 64</code> (0, 64, 128, 192).
+          </p>
+        </div>
+
+        <div class="formula-box">
+          <div class="formula-title">3. Aturan Emas Perancangan VLSM</div>
+          <div class="formula-code">Urutkan Host Terbesar &rarr; Terkecil</div>
+          <p class="formula-desc">
+            Selalu alokasikan subnet untuk ruangan dengan kebutuhan host paling banyak terlebih dahulu agar batas kelipatan blok (<em>boundary</em>) tetap rapi dan tidak tumpang tindih.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Lab Maya Teknik Komputer dan Jaringan (TKJ) — Simulator Subnetting IPv4 &amp; Kalkulator VLSM Interaktif
+  </footer>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    /* =========================================================================
+       BAGIAN 1: FUNGSI UTILITAS IPv4 BITWISE & KONVERSI
+       ========================================================================= */
+    function isValidIPv4(ipStr) {
+      const parts = ipStr.trim().split('.');
+      if (parts.length !== 4) return false;
+      for (let part of parts) {
+        if (!/^\d+$/.test(part)) return false;
+        if (part.length > 1 && part.startsWith('0')) return false;
+        const num = Number(part);
+        if (num < 0 || num > 255) return false;
+      }
+      return true;
+    }
+
+    function ipToInt(ipStr) {
+      const parts = ipStr.trim().split('.').map(Number);
+      return (((parts[0] << 24) >>> 0) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+    }
+
+    function intToIp(intVal) {
+      return [
+        (intVal >>> 24) & 255,
+        (intVal >>> 16) & 255,
+        (intVal >>> 8) & 255,
+        intVal & 255
+      ].join('.');
+    }
+
+    function intToBinaryOctets(intVal) {
+      return [
+        ((intVal >>> 24) & 255).toString(2).padStart(8, '0'),
+        ((intVal >>> 16) & 255).toString(2).padStart(8, '0'),
+        ((intVal >>> 8) & 255).toString(2).padStart(8, '0'),
+        (intVal & 255).toString(2).padStart(8, '0')
+      ];
+    }
+
+    function prefixToMaskInt(prefix) {
+      if (prefix === 0) return 0;
+      return (0xffffffff << (32 - prefix)) >>> 0;
+    }
+
+    function classifyIPv4(ipInt) {
+      const firstOctet = (ipInt >>> 24) & 255;
+      const secondOctet = (ipInt >>> 16) & 255;
+
+      let ipClass = 'Kelas A';
+      if (firstOctet >= 1 && firstOctet <= 126) ipClass = 'Kelas A';
+      else if (firstOctet === 127) ipClass = 'Loopback (127.0.0.0/8)';
+      else if (firstOctet >= 128 && firstOctet <= 191) ipClass = 'Kelas B';
+      else if (firstOctet >= 192 && firstOctet <= 223) ipClass = 'Kelas C';
+      else if (firstOctet >= 224 && firstOctet <= 239) ipClass = 'Kelas D (Multicast)';
+      else ipClass = 'Kelas E (Eksperimental)';
+
+      let isPrivate = false;
+      if (firstOctet === 10) isPrivate = true;
+      else if (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31) isPrivate = true;
+      else if (firstOctet === 192 && secondOctet === 168) isPrivate = true;
+      else if (firstOctet === 169 && secondOctet === 254) isPrivate = true;
+
+      return {
+        ipClass,
+        isPrivate,
+        typeLabel: isPrivate ? 'Private IP (RFC 1918)' : 'Public IP (Internet)',
+        scopeDesc: isPrivate
+          ? 'Digunakan untuk Jaringan Lokal (LAN / Intranet Sekolah/Kantor)'
+          : 'Dapat dirutekan langsung di Jaringan Internet Global'
+      };
+    }
+
+    /* =========================================================================
+       BAGIAN 2: NAVIGASI TAB MODE 1 & MODE 2
+       ========================================================================= */
+    function switchMode(modeNum) {
+      const tab1 = document.getElementById('tabBtn1');
+      const tab2 = document.getElementById('tabBtn2');
+      const sec1 = document.getElementById('mode1Section');
+      const sec2 = document.getElementById('mode2Section');
+
+      if (modeNum === 1) {
+        tab1.classList.add('active');
+        tab1.setAttribute('aria-selected', 'true');
+        tab2.classList.remove('active');
+        tab2.setAttribute('aria-selected', 'false');
+        sec1.classList.add('active');
+        sec2.classList.remove('active');
+      } else {
+        tab2.classList.add('active');
+        tab2.setAttribute('aria-selected', 'true');
+        tab1.classList.remove('active');
+        tab1.setAttribute('aria-selected', 'false');
+        sec2.classList.add('active');
+        sec1.classList.remove('active');
+      }
+    }
+
+    /* =========================================================================
+       BAGIAN 3: LOGIKA MODE 1 — BEDAH BIT & KALKULATOR SUBNETTING IPv4
+       ========================================================================= */
+    function initMode1() {
+      const selectEl = document.getElementById('cidrSelect');
+      selectEl.innerHTML = '';
+      for (let p = 8; p <= 30; p++) {
+        const opt = document.createElement('option');
+        opt.value = p;
+        const mask = intToIp(prefixToMaskInt(p));
+        opt.textContent = `/${p} (${mask})`;
+        if (p === 24) opt.selected = true;
+        selectEl.appendChild(opt);
+      }
+      handleMode1Update();
+    }
+
+    function syncCidrFromSlider(val) {
+      document.getElementById('cidrSelect').value = val;
+      handleMode1Update();
+    }
+
+    function syncCidrFromSelect(val) {
+      document.getElementById('cidrSlider').value = val;
+      handleMode1Update();
+    }
+
+    function applyPreset(ip, prefix) {
+      document.getElementById('ipAddressInput').value = ip;
+      document.getElementById('cidrSlider').value = prefix;
+      document.getElementById('cidrSelect').value = prefix;
+      handleMode1Update();
+    }
+
+    function handleMode1Update() {
+      const ipInput = document.getElementById('ipAddressInput');
+      const errMsg = document.getElementById('ipErrorMsg');
+      const prefix = parseInt(document.getElementById('cidrSlider').value, 10);
+
+      document.getElementById('cidrBadge').textContent = `/${prefix}`;
+      const hostBits = 32 - prefix;
+      document.getElementById('bitSplitSummary').textContent = `${prefix} Bit Network | ${hostBits} Bit Host`;
+
+      const rawIp = ipInput.value.trim();
+      if (!isValidIPv4(rawIp)) {
+        ipInput.classList.add('invalid');
+        errMsg.style.display = 'block';
+        return;
+      }
+
+      ipInput.classList.remove('invalid');
+      errMsg.style.display = 'none';
+
+      // Perhitungan Bitwise IPv4
+      const ipInt = ipToInt(rawIp);
+      const maskInt = prefixToMaskInt(prefix);
+      const wildcardInt = (~maskInt) >>> 0;
+      const networkInt = (ipInt & maskInt) >>> 0;
+      const broadcastInt = (networkInt | wildcardInt) >>> 0;
+
+      const totalIps = Math.pow(2, hostBits);
+      const usableHosts = hostBits >= 2 ? totalIps - 2 : 0;
+      const firstHostInt = hostBits >= 2 ? (networkInt + 1) >>> 0 : networkInt;
+      const lastHostInt = hostBits >= 2 ? (broadcastInt - 1) >>> 0 : broadcastInt;
+
+      // Render Visualisasi Biner 32-Bit
+      renderBinary32Bit(ipInt, prefix);
+
+      // Update Kartu Hasil Perhitungan
+      const classInfo = classifyIPv4(ipInt);
+      document.getElementById('ipClassBadge').textContent = `${classInfo.ipClass} • ${classInfo.typeLabel}`;
+
+      document.getElementById('resNetworkId').textContent = `${intToIp(networkInt)}/${prefix}`;
+      document.getElementById('resNetworkBin').textContent = intToBinaryOctets(networkInt).join('.');
+
+      document.getElementById('resBroadcast').textContent = intToIp(broadcastInt);
+      document.getElementById('resBroadcastBin').textContent = intToBinaryOctets(broadcastInt).join('.');
+
+      document.getElementById('resSubnetMask').textContent = intToIp(maskInt);
+      document.getElementById('resSubnetBin').textContent = intToBinaryOctets(maskInt).join('.');
+
+      document.getElementById('resWildcard').textContent = intToIp(wildcardInt);
+      document.getElementById('resWildcardBin').textContent = intToBinaryOctets(wildcardInt).join('.');
+
+      document.getElementById('resHostRange').textContent = `${intToIp(firstHostInt)} — ${intToIp(lastHostInt)}`;
+
+      document.getElementById('resHostCounts').innerHTML =
+        `${usableHosts.toLocaleString('id-ID')} Host Valid <span style="font-size: 0.78rem; color: var(--text-secondary);">(${totalIps.toLocaleString('id-ID')} Total IP)</span>`;
+      document.getElementById('resFormulaDetail').textContent =
+        `Rumus: 2^${hostBits} - 2 = ${usableHosts.toLocaleString('id-ID')} host`;
+
+      document.getElementById('resIpType').textContent = `${classInfo.ipClass} — ${classInfo.typeLabel.split(' ')[0]} IP`;
+      document.getElementById('resIpScope').textContent = classInfo.scopeDesc;
+
+      // Hitung Oktet Kritis & Block Size
+      const maskOctets = intToIp(maskInt).split('.').map(Number);
+      let criticalOctetIdx = 3;
+      for (let i = 0; i < 4; i++) {
+        if (maskOctets[i] < 255) {
+          criticalOctetIdx = i;
+          break;
+        }
+      }
+      const blockSize = 256 - maskOctets[criticalOctetIdx];
+      document.getElementById('resBlockSize').textContent = `${blockSize} (Oktet ke-${criticalOctetIdx + 1})`;
+      document.getElementById('resInterestingOctet').textContent =
+        `256 - ${maskOctets[criticalOctetIdx]} = ${blockSize} alamat per kelipatan`;
+    }
+
+    function renderBinary32Bit(ipInt, prefix) {
+      const container = document.getElementById('octetsContainer');
+      const binOctets = intToBinaryOctets(ipInt);
+      const decOctets = intToIp(ipInt).split('.');
+      const weights = [128, 64, 32, 16, 8, 4, 2, 1];
+
+      let html = '';
+      for (let octIdx = 0; octIdx < 4; octIdx++) {
+        const bitsStr = binOctets[octIdx];
+        let bitsHtml = '';
+
+        for (let bitInOct = 0; bitInOct < 8; bitInOct++) {
+          const globalBitPos = octIdx * 8 + bitInOct + 1; // 1 s/d 32
+          const isNetworkBit = globalBitPos <= prefix;
+          const isBoundary = globalBitPos === prefix;
+
+          const cellClass = [
+            'bit-cell',
+            isNetworkBit ? 'net-bit' : 'host-bit',
+            isBoundary ? 'cidr-boundary' : ''
+          ].join(' ');
+
+          bitsHtml += `
+            <div class="${cellClass}" title="Bit ke-${globalBitPos} (${isNetworkBit ? 'Network' : 'Host'}) • Bobot: ${weights[bitInOct]}">
+              <span class="bit-val">${bitsStr[bitInOct]}</span>
+              <span class="bit-weight">${weights[bitInOct]}</span>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="octet-box">
+            <div class="octet-header">
+              <span>OKTET ${octIdx + 1} (Bit ${octIdx * 8 + 1}-${(octIdx + 1) * 8})</span>
+              <span class="octet-dec">${decOctets[octIdx]}</span>
+            </div>
+            <div class="bits-row">
+              ${bitsHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+
+      // Penjelasan batas CIDR
+      const targetOctet = Math.ceil(prefix / 8);
+      const bitInTargetOctet = prefix % 8 === 0 ? 8 : prefix % 8;
+      document.getElementById('cidrMarkerExplanation').innerHTML = `
+        <span>📍 <strong>Batas Prefix /${prefix}:</strong> Terletak tepat setelah <strong>bit ke-${prefix}</strong> (Oktet ke-${targetOctet}, posisi bit ke-${bitInTargetOctet}).</span>
+        <span style="font-family: var(--font-mono);">Network: <strong>${prefix} bit</strong> | Host: <strong>${32 - prefix} bit</strong></span>
+      `;
+    }
+
+    /* =========================================================================
+       BAGIAN 4: LOGIKA MODE 2 — TANTANGAN LAB DESAIN VLSM
+       ========================================================================= */
+    const VLSM_SCENARIOS = [
+      {
+        title: 'Skenario 1: Topologi Jaringan SMK Negeri TKJ',
+        baseNetwork: '192.168.100.0',
+        basePrefix: 24,
+        description: 'Anda ditugaskan membagi blok IP utama <strong>192.168.100.0/24</strong> untuk 5 segmen jaringan sekolah menggunakan VLSM. Urutkan alokasi dari kebutuhan host terbesar ke terkecil!',
+        divisions: [
+          { name: 'Lab Komputer 1 (RPL/TKJ)', neededHosts: 60, color: '#06b6d4' },
+          { name: 'Lab Komputer 2 (Multimedia)', neededHosts: 28, color: '#10b981' },
+          { name: 'Ruang Guru & Tata Usaha', neededHosts: 12, color: '#f59e0b' },
+          { name: 'Server Lokal & Hotspot', neededHosts: 5, color: '#8b5cf6' },
+          { name: 'Link Router-ke-Router (WAN)', neededHosts: 2, color: '#ec4899' }
+        ]
+      },
+      {
+        title: 'Skenario 2: Infrastruktur Jaringan Gedung Perkantoran',
+        baseNetwork: '192.168.50.0',
+        basePrefix: 24,
+        description: 'Divisi IT meminta pembagian blok IP <strong>192.168.50.0/24</strong> untuk 5 departemen kantor. Hitung Prefix CIDR, Network ID, dan Broadcast Address secara berurutan tanpa pemborosan IP!',
+        divisions: [
+          { name: 'Lantai 1 — Customer Service', neededHosts: 100, color: '#06b6d4' },
+          { name: 'Lantai 2 — Tim Operasional', neededHosts: 45, color: '#10b981' },
+          { name: 'Lantai 3 — Ruang Rapat & Tamu', neededHosts: 14, color: '#f59e0b' },
+          { name: 'Ruang NOC & CCTV', neededHosts: 6, color: '#8b5cf6' },
+          { name: 'Point-to-Point Core Router', neededHosts: 2, color: '#ec4899' }
+        ]
+      }
+    ];
+
+    let currentScenarioIndex = 0;
+    let computedVlsmSolution = [];
+
+    // Menghitung kunci jawaban VLSM yang presisi dari skenario aktif
+    function calculateVlsmSolution(scenario) {
+      let currentIpInt = ipToInt(scenario.baseNetwork);
+      const solution = [];
+
+      scenario.divisions.forEach((div) => {
+        // Cari jumlah bit host terkecil h sehingga (2^h - 2) >= neededHosts
+        let h = 2;
+        while (Math.pow(2, h) - 2 < div.neededHosts) {
+          h++;
+        }
+        const prefix = 32 - h;
+        const blockSize = Math.pow(2, h);
+        const usableHosts = blockSize - 2;
+        const netInt = currentIpInt;
+        const bcastInt = (netInt + blockSize - 1) >>> 0;
+
+        solution.push({
+          name: div.name,
+          neededHosts: div.neededHosts,
+          color: div.color,
+          prefix: prefix,
+          blockSize: blockSize,
+          usableHosts: usableHosts,
+          networkId: intToIp(netInt),
+          broadcastId: intToIp(bcastInt),
+          firstHost: intToIp((netInt + 1) >>> 0),
+          lastHost: intToIp((bcastInt - 1) >>> 0)
+        });
+
+        currentIpInt = (bcastInt + 1) >>> 0;
+      });
+
+      return solution;
+    }
+
+    function renderVlsmTable() {
+      const scenario = VLSM_SCENARIOS[currentScenarioIndex];
+      computedVlsmSolution = calculateVlsmSolution(scenario);
+
+      document.getElementById('scenarioTitle').textContent = scenario.title;
+      document.getElementById('scenarioDesc').innerHTML = scenario.description;
+      document.getElementById('vlsmBaseBlock').textContent = `${scenario.baseNetwork}/${scenario.basePrefix}`;
+
+      const tbody = document.getElementById('vlsmTableBody');
+      tbody.innerHTML = '';
+
+      computedVlsmSolution.forEach((item, idx) => {
+        // Opsi dropdown prefix (/24 sampai /30)
+        let prefixOptions = '<option value="">-- Pilih --</option>';
+        for (let p = 24; p <= 30; p++) {
+          const cap = Math.pow(2, 32 - p) - 2;
+          prefixOptions += `<option value="${p}">/${p} (${cap} host)</option>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: var(--font-mono); font-weight: 700; color: var(--text-secondary);">${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 10px; height: 10px; border-radius: 3px; background: ${item.color}; flex-shrink: 0;"></span>
+              <strong style="color: #fff;">${item.name}</strong>
+            </div>
+          </td>
+          <td style="font-family: var(--font-mono); color: var(--accent-cyan-light); font-weight: 700;">${item.neededHosts} Host</td>
+          <td>
+            <select id="vlsmPrefix-${idx}" class="vlsm-select" onchange="updateLiveIpMapFromUserInputs()">
+              ${prefixOptions}
+            </select>
+          </td>
+          <td>
+            <input type="text" id="vlsmNet-${idx}" class="vlsm-input" placeholder="192.168.x.x" oninput="updateLiveIpMapFromUserInputs()" />
+          </td>
+          <td>
+            <input type="text" id="vlsmBcast-${idx}" class="vlsm-input" placeholder="192.168.x.x" oninput="updateLiveIpMapFromUserInputs()" />
+          </td>
+          <td>
+            <span id="vlsmStatus-${idx}" class="status-pill pill-wait">BELUM DIUJI</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('vlsmFeedbackContainer').innerHTML = '';
+      renderIpAllocationMap([]);
+    }
+
+    function switchVlsmScenario() {
+      currentScenarioIndex = (currentScenarioIndex + 1) % VLSM_SCENARIOS.length;
+      renderVlsmTable();
+    }
+
+    function resetVlsmInputs() {
+      renderVlsmTable();
+    }
+
+    function autoFillVlsmSolution() {
+      computedVlsmSolution.forEach((sol, idx) => {
+        document.getElementById(`vlsmPrefix-${idx}`).value = sol.prefix;
+        document.getElementById(`vlsmNet-${idx}`).value = sol.networkId;
+        document.getElementById(`vlsmBcast-${idx}`).value = sol.broadcastId;
+      });
+      checkVlsmAnswers();
+    }
+
+    // Validasi Per Baris & Penjelasan Koreksi Otomatis
+    function checkVlsmAnswers() {
+      const feedbackContainer = document.getElementById('vlsmFeedbackContainer');
+      feedbackContainer.innerHTML = '';
+
+      let allCorrect = true;
+      const validSegmentsForMap = [];
+
+      computedVlsmSolution.forEach((sol, idx) => {
+        const userPrefix = parseInt(document.getElementById(`vlsmPrefix-${idx}`).value, 10);
+        const userNet = document.getElementById(`vlsmNet-${idx}`).value.trim();
+        const userBcast = document.getElementById(`vlsmBcast-${idx}`).value.trim();
+        const statusEl = document.getElementById(`vlsmStatus-${idx}`);
+
+        const isPrefixOk = userPrefix === sol.prefix;
+        const isNetOk = userNet === sol.networkId;
+        const isBcastOk = userBcast === sol.broadcastId;
+
+        const rowCorrect = isPrefixOk && isNetOk && isBcastOk;
+
+        if (rowCorrect) {
+          statusEl.className = 'status-pill pill-ok';
+          statusEl.textContent = '✓ BENAR';
+          validSegmentsForMap.push(sol);
+
+          const fb = document.createElement('div');
+          fb.className = 'feedback-row ok';
+          fb.innerHTML = `
+            <span>✅</span>
+            <div>
+              <strong>Baris ${idx + 1} (${sol.name}):</strong> Tepat! Kebutuhan ${sol.neededHosts} host dipenuhi oleh <code>/${sol.prefix}</code> (kapasitas ${sol.usableHosts} host valid, blok ${sol.blockSize} IP) dari <code>${sol.networkId}</code> s/d <code>${sol.broadcastId}</code>.
+            </div>
+          `;
+          feedbackContainer.appendChild(fb);
+        } else {
+          allCorrect = false;
+          statusEl.className = 'status-pill pill-err';
+          statusEl.textContent = '✗ SALAH';
+
+          // Susun alasan kesalahan secara spesifik
+          const errors = [];
+          if (!isPrefixOk) {
+            const hBits = 32 - sol.prefix;
+            errors.push(`Prefix seharusnya <strong>/${sol.prefix}</strong> (karena 2^${hBits} - 2 = ${sol.usableHosts} host &ge; ${sol.neededHosts} host)`);
+          }
+          if (!isNetOk) {
+            errors.push(`Network ID seharusnya <strong>${sol.networkId}</strong>`);
+          }
+          if (!isBcastOk) {
+            errors.push(`Broadcast Address seharusnya <strong>${sol.broadcastId}</strong> (Network ID + ${sol.blockSize - 1})`);
+          }
+
+          const fb = document.createElement('div');
+          fb.className = 'feedback-row err';
+          fb.innerHTML = `
+            <span>❌</span>
+            <div>
+              <strong>Baris ${idx + 1} (${sol.name}):</strong> Perlu diperbaiki &rarr; ${errors.join('; ')}.
+            </div>
+          `;
+          feedbackContainer.appendChild(fb);
+        }
+      });
+
+      if (allCorrect) {
+        const banner = document.createElement('div');
+        banner.className = 'feedback-row ok';
+        banner.style.fontWeight = '700';
+        banner.innerHTML = `
+          <span>🏆</span>
+          <div>Selamat! Seluruh rancangan tabel VLSM Anda 100% akurat, efisien, dan bebas tumpang tindih!</div>
+        `;
+        feedbackContainer.prepend(banner);
+      }
+
+      renderIpAllocationMap(validSegmentsForMap);
+    }
+
+    // Perbarui peta visual secara langsung saat siswa mengetik nilai valid
+    function updateLiveIpMapFromUserInputs() {
+      const validSegments = [];
+      computedVlsmSolution.forEach((sol, idx) => {
+        const userPrefix = parseInt(document.getElementById(`vlsmPrefix-${idx}`).value, 10);
+        const userNet = document.getElementById(`vlsmNet-${idx}`).value.trim();
+        const userBcast = document.getElementById(`vlsmBcast-${idx}`).value.trim();
+
+        if (userPrefix === sol.prefix && userNet === sol.networkId && userBcast === sol.broadcastId) {
+          validSegments.push(sol);
+        }
+      });
+      renderIpAllocationMap(validSegments);
+    }
+
+    // Render Diagram Batang 256 Alamat IP
+    function renderIpAllocationMap(segments) {
+      const track = document.getElementById('ipBarTrack');
+      const legend = document.getElementById('ipMapLegend');
+      const summary = document.getElementById('vlsmUsageSummary');
+
+      if (!segments || segments.length === 0) {
+        track.innerHTML = `<div class="ip-bar-free">Belum ada blok VLSM yang valid — Lengkapi tabel lalu klik "Periksa Jawaban"</div>`;
+        legend.innerHTML = '';
+        summary.textContent = 'Terpakai: 0 / 256 IP (0%)';
+        return;
+      }
+
+      let usedIps = 0;
+      let trackHtml = '';
+      let legendHtml = '';
+
+      segments.forEach((seg) => {
+        usedIps += seg.blockSize;
+        const widthPct = (seg.blockSize / 256) * 100;
+        const shortLabel = widthPct >= 14 ? `${seg.name.split(' ')[0]} (/${seg.prefix})` : `/${seg.prefix}`;
+
+        trackHtml += `
+          <div class="ip-bar-segment"
+               style="width: ${widthPct}%; background: ${seg.color};"
+               title="${seg.name}: ${seg.networkId}/${seg.prefix} s/d ${seg.broadcastId} (${seg.blockSize} IP)">
+            <span>${shortLabel}</span>
+            <span style="font-size: 0.62rem; opacity: 0.9;">${seg.blockSize} IP</span>
+          </div>
+        `;
+
+        legendHtml += `
+          <div class="map-legend-chip">
+            <span style="width: 10px; height: 10px; border-radius: 3px; background: ${seg.color};"></span>
+            <span><strong>${seg.name}</strong>: ${seg.networkId}/${seg.prefix} &ndash; ${seg.broadcastId} (${seg.blockSize} IP)</span>
+          </div>
+        `;
+      });
+
+      const freeIps = 256 - usedIps;
+      if (freeIps > 0) {
+        trackHtml += `<div class="ip-bar-free">Sisa Cadangan: ${freeIps} IP</div>`;
+      }
+
+      const pct = ((usedIps / 256) * 100).toFixed(1);
+      summary.textContent = `Terpakai: ${usedIps} / 256 IP (${pct}%) • Sisa Cadangan: ${freeIps} IP`;
+      track.innerHTML = trackHtml;
+      legend.innerHTML = legendHtml;
+    }
+
+    // Inisialisasi Aplikasi saat DOM siap
+    window.addEventListener('DOMContentLoaded', () => {
+      initMode1();
+      renderVlsmTable();
+    });
+  </script>
+</body>
+</html>
